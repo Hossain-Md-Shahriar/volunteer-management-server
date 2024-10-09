@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 const app = express();
@@ -33,8 +33,23 @@ async function run() {
       .db("volunteerDB")
       .collection("allNeedVolunteer");
 
+    // get all need volunteer posts
     app.get("/all-need-volunteer", async (req, res) => {
       const result = await allNeedVolunteer.find().toArray();
+      res.send(result);
+    });
+
+    // get a single post of need volunteer from db
+    app.get("/all-need-volunteer/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await allNeedVolunteer.findOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+    // insert a need volunteer post to the database
+    app.post("/need-volunteer", async (req, res) => {
+      const needVolunteer = req.body;
+      const result = await allNeedVolunteer.insertOne(needVolunteer);
       res.send(result);
     });
 
