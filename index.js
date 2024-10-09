@@ -32,10 +32,17 @@ async function run() {
     const allNeedVolunteer = client
       .db("volunteerDB")
       .collection("allNeedVolunteer");
+    const allVolunteerRequest = client
+      .db("volunteerDB")
+      .collection("allVolunteerRequest");
 
     // get all need volunteer posts
     app.get("/all-need-volunteer", async (req, res) => {
-      const result = await allNeedVolunteer.find().toArray();
+      const search = req.query.search;
+      const query = {
+        postTitle: { $regex: search, $options: "i" },
+      };
+      const result = await allNeedVolunteer.find(query).toArray();
       res.send(result);
     });
 
@@ -50,6 +57,38 @@ async function run() {
     app.post("/need-volunteer", async (req, res) => {
       const needVolunteer = req.body;
       const result = await allNeedVolunteer.insertOne(needVolunteer);
+      res.send(result);
+    });
+
+    // insert a new request to be a volunteer data to db & decrement no. of needed volunteer
+    app.post("/volunteer-request", async (req, res) => {
+      const volunteerRequest = req.body;
+
+      // check if it is a duplicate request
+      const query = {
+        "volunteer.email": volunteerRequest.volunteer.email,
+        postId: volunteerRequest.postId,
+      };
+
+      const alreadyApplied = await allVolunteerRequest.findOne(query);
+      if (alreadyApplied) {
+        return res.status(400).send("You have already requested on this post.");
+      }
+
+      const result = await allVolunteerRequest.insertOne(volunteerRequest);
+
+      // decrement no. of needed volunteer by 1 in allNeedVolunteer
+      const updateDoc = {
+        $inc: { volunteersNeeded: -1 },
+      };
+
+      const needVolunteerQuery = { _id: new ObjectId(volunteerRequest.postId) };
+      const updateVolunteersNeeded = await allNeedVolunteer.updateOne(
+        needVolunteerQuery,
+        updateDoc
+      );
+      console.log(updateVolunteersNeeded);
+
       res.send(result);
     });
 
