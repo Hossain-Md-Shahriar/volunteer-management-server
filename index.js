@@ -39,9 +39,12 @@ async function run() {
     // get all need volunteer posts
     app.get("/all-need-volunteer", async (req, res) => {
       const search = req.query.search;
-      const query = {
-        postTitle: { $regex: search, $options: "i" },
-      };
+      let query = {};
+      if (search) {
+        query = {
+          postTitle: { $regex: search, $options: "i" },
+        };
+      }
       const result = await allNeedVolunteer.find(query).toArray();
       res.send(result);
     });
@@ -89,6 +92,14 @@ async function run() {
       );
       console.log(updateVolunteersNeeded);
 
+      res.send(result);
+    });
+
+    // get all need volunteer posts posted by a specific user
+    app.get("/all-need-volunteers/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { "organizer.email": email };
+      const result = await allNeedVolunteer.find(query).toArray();
       res.send(result);
     });
 
