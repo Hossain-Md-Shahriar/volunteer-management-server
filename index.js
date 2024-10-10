@@ -74,7 +74,19 @@ async function run() {
           ...NeedVolunteerData,
         },
       };
-      const result = await allNeedVolunteer.updateOne(query, updateDoc, options);
+      const result = await allNeedVolunteer.updateOne(
+        query,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    // delete a need volunteer post
+    app.delete("/need-volunteer/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await allNeedVolunteer.deleteOne(query);
       res.send(result);
     });
 
