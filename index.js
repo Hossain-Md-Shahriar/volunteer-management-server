@@ -63,6 +63,21 @@ async function run() {
       res.send(result);
     });
 
+    // update a need volunteer post
+    app.put("/all-need-volunteer/:id", async (req, res) => {
+      const id = req.params.id;
+      const NeedVolunteerData = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          ...NeedVolunteerData,
+        },
+      };
+      const result = await allNeedVolunteer.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
+
     // insert a new request to be a volunteer data to db & decrement no. of needed volunteer
     app.post("/volunteer-request", async (req, res) => {
       const volunteerRequest = req.body;
@@ -105,11 +120,11 @@ async function run() {
 
     // get all volunteer requests requested by a specific user
     app.get("/volunteer-requests/:email", async (req, res) => {
-        const email = req.params.email;
-        const query = { "volunteer.email": email };
-        const result = await allVolunteerRequest.find(query).toArray();
-        res.send(result);
-    })
+      const email = req.params.email;
+      const query = { "volunteer.email": email };
+      const result = await allVolunteerRequest.find(query).toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
