@@ -135,16 +135,30 @@ async function run() {
       res.send(result);
     });
 
-    // cancel a volunteer request
-    app.delete("/volunteer-request/:id", async (req, res) => {
-      const id = req.params.id;
+    // cancel a volunteer request & increment no. of needed volunteer
+    app.delete("/volunteer-request", async (req, res) => {
+      const id = req.query.id;
+      const postId = req.query.postId;
       const query = { _id: new ObjectId(id) };
       const result = await allVolunteerRequest.deleteOne(query);
+
+      // increment no. of needed volunteer by 1 in a document of allNeedVolunteer
+      const updateDoc = {
+        $inc: { volunteersNeeded: 1 },
+      };
+
+      const needVolunteerQuery = { _id: new ObjectId(postId) };
+      const updateVolunteersNeeded = await allNeedVolunteer.updateOne(
+        needVolunteerQuery,
+        updateDoc
+      );
+      console.log(updateVolunteersNeeded);
+
       res.send(result);
     });
 
     // insert a new request to be a volunteer data to db & decrement no. of needed volunteer
-    app.post("/volunteer-request", async (req, res) => {
+    app.post("/volunteer-request", verifyToken, async (req, res) => {
       const volunteerRequest = req.body;
 
       // check if it is a duplicate request
@@ -160,7 +174,7 @@ async function run() {
 
       const result = await allVolunteerRequest.insertOne(volunteerRequest);
 
-      // decrement no. of needed volunteer by 1 in allNeedVolunteer
+      // decrement no. of needed volunteer by 1 in a document of allNeedVolunteer
       const updateDoc = {
         $inc: { volunteersNeeded: -1 },
       };
