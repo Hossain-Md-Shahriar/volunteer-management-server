@@ -36,6 +36,8 @@ async function run() {
       .db("volunteerDB")
       .collection("allVolunteerRequest");
 
+    
+
     // get all need volunteer posts
     app.get("/all-need-volunteer", async (req, res) => {
       const search = req.query.search;
@@ -87,6 +89,14 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await allNeedVolunteer.deleteOne(query);
+      res.send(result);
+    });
+
+    // cancel a volunteer request
+    app.delete("/volunteer-request/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await allVolunteerRequest.deleteOne(query);
       res.send(result);
     });
 
