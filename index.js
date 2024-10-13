@@ -8,9 +8,13 @@ const port = process.env.PORT || 5000;
 const app = express();
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://volunteer-management-9645c.web.app",
+  ],
   credentials: true,
-  optionSuccessStatus: true,
+  optionSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -79,6 +83,16 @@ async function run() {
           maxAge: 0,
         })
         .send({ success: true });
+    });
+
+    // get all need volunteer posts for home in ascending order
+    app.get("/need-volunteers", async (req, res) => {
+      const options = { sort: { deadline: 1 } };
+      const result = await allNeedVolunteer
+        .find({}, options)
+        .limit(6)
+        .toArray();
+      res.send(result);
     });
 
     // get all need volunteer posts
